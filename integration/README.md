@@ -1,10 +1,6 @@
-<<<<<<< HEAD
-# DriftLens integration server
-=======
-# Integration
->>>>>>> origin/main
+﻿# Integration
 
-`POST /api/investigate` orchestrates:
+DriftLens integration server. POST /api/investigate orchestrates:
 
 ```text
 HydraDB retrieval -> Pipeshift classification -> RocketRide conclusion mapping
