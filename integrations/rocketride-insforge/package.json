@@ -1,0 +1,39 @@
+{
+  "name": "@driftlens/rocketride-insforge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/integrations/rocketride-insforge/src/index.js",
+  "types": "./dist/integrations/rocketride-insforge/src/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    ".env.example",
+    "schema.sql",
+    "test-data.json"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/integrations/rocketride-insforge/src/index.d.ts",
+      "import": "./dist/integrations/rocketride-insforge/src/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.test.json --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "demo": "tsx scripts/demo.ts",
+    "demo:live": "tsx scripts/live-demo.ts"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@insforge/sdk": "^1.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0"
+  }
+}
