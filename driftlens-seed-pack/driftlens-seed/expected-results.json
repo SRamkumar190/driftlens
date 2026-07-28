@@ -1,0 +1,18 @@
+{
+  "components": [
+    {
+      "component_id": "occlusion_sensor_01",
+      "expected_status": "verification_incomplete",
+      "reviewed_value": "300 mmHg",
+      "implemented_value": "400 mmHg",
+      "reason": "Discussion and change assessment exist, but verification is incomplete."
+    },
+    {
+      "component_id": "controller_01",
+      "expected_status": "unreviewed_drift",
+      "reviewed_value": "5 seconds",
+      "implemented_value": "7 seconds",
+      "reason": "Temporary workaround was implemented, but no approved design-change task exists."
+    }
+  ]
+}

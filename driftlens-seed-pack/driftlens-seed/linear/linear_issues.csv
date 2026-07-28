@@ -1,0 +1,4 @@
+issue_id,title,status,owner,type,description
+MED-142,[occlusion_sensor_01] Assess increase from 300 to 400 mmHg,Done,Daniel Ortiz,Change Assessment,Engineering rationale reviewed. Proceed to verification before release.
+MED-143,[occlusion_sensor_01] Verify 400 mmHg occlusion threshold,In Progress,Maya Chen,Verification,Verification testing not yet completed.
+MED-151,[controller_01] Investigate startup timeout failures,Done,Lena Park,Investigation,Observed startup timeout failures. Investigation closed after temporary workaround. No approved design-change task created.

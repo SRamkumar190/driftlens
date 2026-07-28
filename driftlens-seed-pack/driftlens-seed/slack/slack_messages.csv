@@ -1,0 +1,5 @@
+timestamp,channel,author,message
+2026-07-18 09:14,med-device-validation,Maya Chen,[occlusion_sensor_01] We are seeing repeated false alarms at 300 mmHg during bench testing.
+2026-07-18 09:19,med-device-validation,Daniel Ortiz,[occlusion_sensor_01] Propose testing 400 mmHg. Please create a formal change assessment and verification task before release.
+2026-07-21 14:03,firmware-debug,Lena Park,[controller_01] The motor is timing out during startup. I temporarily changed the timeout from 5s to 7s to keep testing moving.
+2026-07-21 14:07,firmware-debug,Lena Park,[controller_01] This is a temporary workaround only. We still need formal review before it becomes part of the device baseline.
