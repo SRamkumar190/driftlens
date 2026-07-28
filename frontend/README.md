@@ -1,16 +1,26 @@
-# frontend/
+# DriftLens frontend
 
-**Owner:** Person 1
+React and React Three Fiber interface for reviewing medical-device design drift.
 
-**Responsibility:** 3D model, component selection, status colors, and the evidence panel.
+The frontend provides:
 
-**Expected input:** A `ComponentResult` (see `../shared/types.ts`) for the currently
-selected component, delivered by `integration/`'s `POST /api/investigate` endpoint.
+- A judge-focused landing page at `/`
+- An interactive medical-device review workspace at `/review`
+- Component selection, camera focus, and evidence review
+- Local demo data for the hackathon flow
 
-**Expected output:** A rendered device with each component colored by `status`
-(`matches_design` / `verification_incomplete` / `unreviewed_drift` / `insufficient_evidence`),
-and an evidence panel that displays a selected component's `reviewed_value`,
-`implemented_value`, `drive_evidence`, `slack_evidence`, `linear_evidence`,
-`github_evidence`, `conclusion`, and `recommended_action`.
+## Run locally
 
-**How to run:** _Not yet implemented — instructions added once the frontend app scaffold exists._
+```bash
+npm install
+npm run dev
+```
+
+## Validate
+
+```bash
+npm test
+npm run build
+```
+
+The integration layer can later provide the reviewed values, current values, evidence, conclusions, and recommended actions used by the workspace.
