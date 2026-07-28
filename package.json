@@ -4,6 +4,11 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run hp:check && npm test",
+    "test": "tsx --test integration/server.test.ts",
+    "api": "tsx integration/server.ts",
+    "hp:check": "tsx integrations/hydra-pipeshift/check.ts",
+    "hp:investigate": "tsx integrations/hydra-pipeshift/investigate.ts",
     "rr:check": "tsx integrations/rocketride-insforge/check.ts",
     "rr:investigate": "tsx integrations/rocketride-insforge/investigate.ts",
     "rr:sync-canvas": "tsx integrations/rocketride-insforge/sync-canvas.ts"

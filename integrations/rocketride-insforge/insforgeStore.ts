@@ -28,7 +28,7 @@ export interface IntentProfile {
 	updated_at: string;
 }
 
-export interface StoredInvestigation extends InvestigationResult {
+export interface StoredInvestigation extends Omit<InvestigationResult, 'component_name'> {
 	id: string;
 	intent_profile_id: string | null;
 	component_name: string | null;
@@ -124,7 +124,7 @@ export async function saveInvestigation(
 				{
 					intent_profile_id: intentProfileId,
 					component_id: result.component_id,
-					component_name: options.componentName ?? null,
+					component_name: options.componentName ?? result.component_name,
 					status: result.status,
 					reviewed_value: result.reviewed_value,
 					implemented_value: result.implemented_value,

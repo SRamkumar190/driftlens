@@ -11,6 +11,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DRIFT_STATUSES, STATUS_MAP, reconcile } from './statusMap.js';
 import { loadEnv, ENV_CANDIDATES } from './loadEnv.js';
+import { validatePipeline } from './validatePipeline.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PIPELINE = resolve(HERE, 'drift_investigation.pipe');
@@ -127,6 +128,7 @@ async function main() {
 	// Reconcile is pure, so this is a real check with no network cost.
 	const { result } = reconcile({
 		component_id: 'check_01',
+		component_name: 'Check Component',
 		status: 'matches_design',
 		reviewed_value: null,
 		implemented_value: null,
@@ -148,11 +150,19 @@ async function main() {
 		try {
 			await client.connect();
 			pass('connected to RocketRide');
-			const validation = await client.validate({ pipeline });
+			const { result: validation, usedLegacyWrapper } = await validatePipeline(
+				client,
+				pipeline,
+			);
 			if (validation?.errors?.length) {
 				fail(`engine validate() reported:\n${formatIssues(validation.errors)}`);
 			} else {
 				pass('engine validated the pipeline');
+				if (usedLegacyWrapper) {
+					console.log(
+						'  warn  server required the legacy wrapped validation payload; compatibility retry succeeded',
+					);
+				}
 				for (const warning of validation?.warnings ?? []) {
 					console.log(`  warn  ${describe(warning)}`);
 				}

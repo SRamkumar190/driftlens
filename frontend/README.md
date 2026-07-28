@@ -1,16 +1,21 @@
-# frontend/
+# DriftLens frontend
 
-**Owner:** Person 1
+Interactive medical-device evidence review built with vinext.
 
-**Responsibility:** 3D model, component selection, status colors, and the evidence panel.
+- Exploded-view infusion pump with selectable components.
+- Status colors for all shared `ComponentResult` states.
+- Reviewed-versus-implemented comparison.
+- Drive, Slack, Linear, and GitHub evidence trail.
+- Responsive layout and keyboard-accessible controls.
+- `POST /api/investigate` demo endpoint using the shared response contract.
 
-**Expected input:** A `ComponentResult` (see `../shared/types.ts`) for the currently
-selected component, delivered by `integration/`'s `POST /api/investigate` endpoint.
+```bash
+npm install
+npm run dev
+npm test
+npm run lint
+```
 
-**Expected output:** A rendered device with each component colored by `status`
-(`matches_design` / `verification_incomplete` / `unreviewed_drift` / `insufficient_evidence`),
-and an evidence panel that displays a selected component's `reviewed_value`,
-`implemented_value`, `drive_evidence`, `slack_evidence`, `linear_evidence`,
-`github_evidence`, `conclusion`, and `recommended_action`.
-
-**How to run:** _Not yet implemented — instructions added once the frontend app scaffold exists._
+The site uses a realistic local dataset so the demo works without provider
+credentials. The root integration server supplies the live HydraDB → Pipeshift
+→ RocketRide path.

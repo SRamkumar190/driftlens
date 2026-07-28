@@ -29,6 +29,7 @@ import {
 	saveInvestigation,
 	type StoredInvestigation,
 } from './insforgeStore.js';
+import { validatePipeline } from './validatePipeline.js';
 
 loadEnv();
 
@@ -41,6 +42,7 @@ const RESPONSE_LANE = 'investigation';
 /** The agreed demo payload from Person 2 (HydraDB + Pipeshift output). */
 const SAMPLE_PAYLOAD: InvestigationPayload = {
 	component_id: 'controller_01',
+	component_name: 'Motor Controller',
 	status: 'unreviewed_drift',
 	reviewed_value: '5 seconds',
 	implemented_value: '7 seconds',
@@ -93,9 +95,23 @@ export async function investigate(
 		await client.connect();
 
 		const pipeline = JSON.parse(readFileSync(PIPELINE, 'utf8'));
-		const validation = await client.validate({ pipeline });
+		const { result: validation, usedLegacyWrapper } = await validatePipeline(
+			client,
+			pipeline,
+		);
 		if (validation?.errors?.length) {
-			throw new Error(`Pipeline invalid:\n  ${validation.errors.join('\n  ')}`);
+			throw new Error(
+				`Pipeline invalid:\n  ${validation.errors
+					.map((issue) =>
+						typeof issue === 'string' ? issue : JSON.stringify(issue),
+					)
+					.join('\n  ')}`,
+			);
+		}
+		if (usedLegacyWrapper) {
+			console.warn(
+				'[pipeline warning] server required the legacy wrapped validation payload; compatibility retry succeeded',
+			);
 		}
 		for (const warning of validation?.warnings ?? []) {
 			console.warn(`[pipeline warning] ${warning}`);

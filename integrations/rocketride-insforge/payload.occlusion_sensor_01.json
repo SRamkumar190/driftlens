@@ -1,5 +1,6 @@
 {
   "component_id": "occlusion_sensor_01",
+  "component_name": "Occlusion Sensor",
   "status": "verification_incomplete",
   "reviewed_value": "300 mmHg",
   "implemented_value": "400 mmHg",

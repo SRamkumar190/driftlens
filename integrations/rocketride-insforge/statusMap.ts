@@ -21,6 +21,7 @@ export type DriftStatus = (typeof DRIFT_STATUSES)[number];
 /** Payload the webhook accepts. Mirrors shared/types.ts minus the derived fields. */
 export interface InvestigationPayload {
 	component_id: string;
+	component_name: string;
 	status: string;
 	reviewed_value: string | null;
 	implemented_value: string | null;
@@ -63,6 +64,7 @@ export const STATUS_MAP: Record<DriftStatus, { conclusion: string; recommended_a
 /** Frontend-ready projection: the narrow shape the demo returns to the UI. */
 export interface FrontendResult {
 	component_id: string;
+	component_name: string;
 	status: DriftStatus;
 	confidence: number;
 	conclusion: string;
@@ -96,6 +98,7 @@ export function isDriftStatus(value: unknown): value is DriftStatus {
  */
 const REQUIRED_FIELDS = [
 	'component_id',
+	'component_name',
 	'status',
 	'reviewed_value',
 	'implemented_value',
@@ -124,6 +127,9 @@ export function assertValidPayload(payload: InvestigationPayload): DriftStatus {
 	if (typeof payload.component_id !== 'string' || !payload.component_id.trim()) {
 		throw new MissingFieldsError(['component_id']);
 	}
+	if (typeof payload.component_name !== 'string' || !payload.component_name.trim()) {
+		throw new MissingFieldsError(['component_name']);
+	}
 	if (typeof payload.confidence !== 'number' || Number.isNaN(payload.confidence)) {
 		throw new MissingFieldsError(['confidence']);
 	}
@@ -138,6 +144,7 @@ export function assertValidPayload(payload: InvestigationPayload): DriftStatus {
 export function toFrontendResult(result: InvestigationResult): FrontendResult {
 	return {
 		component_id: result.component_id,
+		component_name: result.component_name,
 		status: result.status,
 		confidence: result.confidence,
 		conclusion: result.conclusion,
@@ -172,6 +179,7 @@ export function reconcile(
 	return {
 		result: {
 			component_id: payload.component_id,
+			component_name: payload.component_name,
 			status,
 			reviewed_value: payload.reviewed_value ?? null,
 			implemented_value: payload.implemented_value ?? null,

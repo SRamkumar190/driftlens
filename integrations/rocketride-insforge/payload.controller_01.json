@@ -1,5 +1,6 @@
 {
   "component_id": "controller_01",
+  "component_name": "Motor Controller",
   "status": "unreviewed_drift",
   "reviewed_value": "5 seconds",
   "implemented_value": "7 seconds",
