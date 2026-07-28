@@ -1,4 +1,4 @@
-# integration/
+# Integration
 
 **Owner:** Person 4
 
