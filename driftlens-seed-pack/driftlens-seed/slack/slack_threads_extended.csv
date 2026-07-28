@@ -1,0 +1,11 @@
+timestamp,channel,thread_root,author,message
+2026-07-18 09:19,med-device-validation,occlusion-threshold-proposal,Daniel Ortiz,"Thread start: propose evaluating 400 mmHg for occlusion_sensor_01."
+2026-07-18 09:33,med-device-validation,occlusion-threshold-proposal,Maya Chen,"Attached bench CSV. Nuisance alarms cluster during warm-up phase."
+2026-07-18 10:10,med-device-validation,occlusion-threshold-proposal,Elena Voss,"Quality gate reminder: assessment Done != verification Done."
+2026-07-19 09:02,med-device-validation,occlusion-threshold-proposal,Daniel Ortiz,"MED-142 marked Done. MED-143 remains In Progress."
+2026-07-22 10:08,med-device-validation,occlusion-threshold-proposal,Maya Chen,"Latency suite 12/20 complete. Cannot claim verification finished."
+2026-07-21 14:03,firmware-debug,controller-timeout-workaround,Lena Park,"Thread start: temporary controller_01 timeout workaround 5s -> 7s."
+2026-07-21 14:22,firmware-debug,controller-timeout-workaround,Omar Haddad,"Please capture root-cause traces. Workaround must not become silent baseline."
+2026-07-21 15:01,firmware-debug,controller-timeout-workaround,Lena Park,"Trace pack uploaded. Startup current spike looks board-dependent."
+2026-07-22 09:40,firmware-debug,controller-timeout-workaround,Omar Haddad,"Still no approved design-change ticket for promoting 7 seconds."
+2026-07-23 11:15,firmware-debug,controller-timeout-workaround,Priya Nair,"Systems view: keep reviewed value at 5 seconds until formal change package exists."

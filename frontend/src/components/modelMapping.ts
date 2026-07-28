@@ -1,5 +1,5 @@
-import { Box3, Object3D, Vector3 } from 'three'
-import type { ComponentId } from '../data/components'
+import { Box3, Mesh, Object3D, Vector3 } from 'three'
+import type { ComponentId, ReviewStatus } from '../data/components'
 
 export const componentModelNames: Record<ComponentId, string> = {
   'main-controller': 'Main Controller',
@@ -10,6 +10,13 @@ export const componentModelNames: Record<ComponentId, string> = {
 }
 
 export type ComponentNodeMap = Record<ComponentId, Object3D>
+
+export const statusColors: Record<ReviewStatus, string> = {
+  critical: '#d83b35',
+  warning: '#e2aa28',
+  approved: '#3b9b68',
+  unreviewed: '#8a959d',
+}
 
 export function normalizeModelNodeName(name: string) {
   return name
@@ -48,4 +55,28 @@ export function calculateFocusPose(node: Object3D, context: Object3D = node) {
   const cameraPosition = new Vector3(target.x, target.y, target.z + Math.max(distance, 5.5))
 
   return { target, cameraPosition }
+}
+
+export function applyComponentStatusColors(
+  mapping: ComponentNodeMap,
+  statuses: Partial<Record<ComponentId, ReviewStatus>>,
+  analysisComplete: boolean,
+) {
+  Object.entries(mapping).forEach(([componentId, node]) => {
+    const status = analysisComplete
+      ? statuses[componentId as ComponentId] ?? 'unreviewed'
+      : 'unreviewed'
+    const color = statusColors[status]
+
+    node.traverse((child) => {
+      if (!(child instanceof Mesh)) return
+      const materials = Array.isArray(child.material) ? child.material : [child.material]
+      materials.forEach((material) => {
+        if ('color' in material && material.color) {
+          material.color.set(color)
+          material.needsUpdate = true
+        }
+      })
+    })
+  })
 }

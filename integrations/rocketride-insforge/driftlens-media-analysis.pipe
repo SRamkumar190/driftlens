@@ -1,0 +1,205 @@
+{
+  "components": [
+    {
+      "id": "driftlens_media_webhook_v2",
+      "provider": "webhook",
+      "config": {
+        "hideForm": true,
+        "mode": "Source",
+        "parameters": {},
+        "type": "webhook"
+      }
+    },
+    {
+      "id": "transcribe_recording",
+      "provider": "audio_transcribe",
+      "config": {
+        "profile": "default",
+        "default": {
+          "model": "small",
+          "language": "en",
+          "silence_threshold": 0.25,
+          "min_seconds": 30,
+          "max_seconds": 300,
+          "vad_level": 1
+        },
+        "parameters": {}
+      },
+      "input": [
+        {
+          "lane": "audio",
+          "from": "driftlens_media_webhook_v2"
+        },
+        {
+          "lane": "video",
+          "from": "driftlens_media_webhook_v2"
+        }
+      ]
+    },
+    {
+      "id": "transcript_question",
+      "provider": "question",
+      "config": {
+        "parameters": {},
+        "type": "question"
+      },
+      "input": [
+        {
+          "lane": "text",
+          "from": "transcribe_recording"
+        }
+      ]
+    },
+    {
+      "id": "media_analysis_prompt",
+      "provider": "prompt",
+      "config": {
+        "instructions": [
+          "Analyze exactly one DriftLens design-review recording. The question is the verbatim transcript. The attached transcript document metadata contains the upload name and source metadata.",
+          "Read source_mode first from source metadata.source_mode when present; otherwise parse the upload name or transcript document metadata.name prefix before the first --. Accept only all_sources or github_only. Read optional component_id metadata or the filename token only as a retrieval hint; spoken content must identify the component.",
+          "Perform structured extraction, live HydraDB retrieval, deterministic classification, and the InsForge save in that order. Return only the final strict JSON."
+        ],
+        "parameters": {}
+      },
+      "input": [
+        {
+          "lane": "questions",
+          "from": "transcript_question"
+        },
+        {
+          "lane": "documents",
+          "from": "transcribe_recording"
+        }
+      ]
+    },
+    {
+      "id": "analyze_classify_save",
+      "provider": "agent_rocketride",
+      "config": {
+        "agent_description": "Extracts one recorded device change, retrieves current evidence, applies fixed rules, saves it, and returns the investigation JSON.",
+        "instructions": [
+          "Treat the incoming question text as the verbatim transcript. Join transcript segments with spaces and do not summarize the stored transcript. Set source_type to design_review_recording.",
+          "Inspect the supplied document metadata. Set source_mode from metadata.source.source_mode when present, otherwise from the all_sources-- or github_only-- prefix in metadata.name. The segment suffix does not change the prefix. Accept only all_sources or github_only.",
+          "Extract only component_id, component_name, reviewed_value_mentioned, proposed_value, and reason from clearly spoken content. Connect occlusion sensor to occlusion_sensor_01 and Main Controller to controller_01 only when spoken content supports it. Normalize millimeters of mercury to mmHg. Use null for unclear fields. Never invent evidence.",
+          "If component_id and source_mode are valid, call http.http_request exactly once to query HydraDB live: method POST, URL https://api.hydradb.com/query, bearer_token ${ROCKETRIDE_HYDRADB_API_KEY}, and body_json {'database': '${ROCKETRIDE_HYDRADB_DATABASE}', 'collection': 'Ali_amjad', 'query': '<component_id> 300 mmHg 400 mmHg MED-142 MED-143 OCCLUSION_THRESHOLD_MMHG false alarms reviewed implemented verification', 'type': 'all', 'query_by': 'hybrid', 'mode': 'fast', 'max_results': 10, 'graph_context': false}. Require HTTP success and use only returned chunks.",
+          "Use metadata.provider or additional_metadata.app_provider to prove source provenance. Set reviewed_value and drive_evidence only from a returned Drive chunk, Slack evidence only from a returned Slack chunk, assessment flags and linear_evidence only from returned Linear chunks, and implemented_value and github_evidence only from a returned GitHub chunk. The spoken reviewed_value_mentioned is recording evidence and must never populate reviewed_value by itself. Use null for missing evidence.",
+          "For github_only retain only current GitHub evidence and set reviewed_value, drive_evidence, slack_evidence, and linear_evidence to null. Do not reuse evidence from another request.",
+          "Set reason_or_discussion_exists true when the recording clearly states a reason or proven Slack evidence contains relevant discussion. Set assessment_exists, approved_assessment_exists, and verification_completed true only when proven Linear evidence explicitly supports each claim.",
+          "Create recording_evidence as one concise statement containing only the clearly spoken component, old value, new value, and reason.",
+          "Statuses are not an LLM decision. After building the evidence object, call python.execute exactly once with the exact program below, replacing only EVIDENCE_JSON with a valid quoted JSON string containing that object:",
+          "import json\ne = json.loads(EVIDENCE_JSON)\nmessages = {\n  'matches_design': ('Implementation matches the reviewed design', 'No drift action required'),\n  'verification_incomplete': ('The change was discussed and assessed, but verification is incomplete', 'Complete verification before release review'),\n  'unreviewed_drift': ('Implementation changed without complete review evidence', 'Send for engineering and quality review'),\n  'insufficient_evidence': ('The recording cannot be connected to complete reviewed and implementation evidence', 'Collect the missing design and implementation evidence')\n}\nconfidence = {'matches_design': 0.90, 'verification_incomplete': 0.92, 'unreviewed_drift': 0.96, 'insufficient_evidence': 0.19}\nreviewed = e.get('reviewed_value')\nimplemented = e.get('implemented_value')\nif e.get('source_mode') == 'github_only':\n    reviewed = None\n    e['reviewed_value'] = None\n    e['drive_evidence'] = None\n    e['slack_evidence'] = None\n    e['linear_evidence'] = None\nif e.get('component_id') is None or reviewed is None or implemented is None:\n    status = 'insufficient_evidence'\nelif str(reviewed).strip().lower() == str(implemented).strip().lower():\n    status = 'matches_design'\nelif bool(e.get('reason_or_discussion_exists')) and bool(e.get('assessment_exists')) and not bool(e.get('verification_completed')):\n    status = 'verification_incomplete'\nelif e.get('github_evidence') is not None and not bool(e.get('approved_assessment_exists')):\n    status = 'unreviewed_drift'\nelse:\n    status = 'insufficient_evidence'\nconclusion, action = messages[status]\ncomponent = {\n  'component_id': e.get('component_id'),\n  'component_name': e.get('component_name'),\n  'status': status,\n  'reviewed_value': reviewed,\n  'implemented_value': implemented,\n  'confidence': confidence[status],\n  'recording_evidence': e.get('recording_evidence'),\n  'drive_evidence': e.get('drive_evidence'),\n  'slack_evidence': e.get('slack_evidence'),\n  'linear_evidence': e.get('linear_evidence'),\n  'github_evidence': e.get('github_evidence'),\n  'conclusion': conclusion,\n  'recommended_action': action\n}\nresult = {'source_mode': e.get('source_mode'), 'input_type': 'audio_video', 'transcript': e.get('transcript'), 'component_result': component, 'review_status': 'pending'}",
+          "Use the Python result verbatim. Then call http.http_request exactly once with method POST, URL ${ROCKETRIDE_INSFORGE_URL}/api/database/records/investigations, bearer_token ${ROCKETRIDE_INSFORGE_API_KEY}, headers {'Prefer': 'return=representation'}, and body_json as a one-element array containing {'source_mode': result.source_mode, 'components_json': [{'input_type': result.input_type, 'transcript': result.transcript, 'component_result': result.component_result, 'review_status': result.review_status}], 'review_status': 'pending'}.",
+          "Return an investigation_id only when the HTTP tool reports success and its returned database row contains that exact id. Never fabricate or guess an ID. On success return strict JSON only with exactly {'investigation_id': '<returned id>', 'component_result': result.component_result}. On any failure return strict JSON with error containing the real tool error and investigation_id null."
+        ],
+        "max_waves": 8,
+        "parameters": {}
+      },
+      "input": [
+        {
+          "lane": "questions",
+          "from": "media_analysis_prompt"
+        }
+      ]
+    },
+    {
+      "id": "media_shared_llm",
+      "provider": "llm_openai_api",
+      "config": {
+        "profile": "custom",
+        "custom": {
+          "model": "openai/gpt-4.1",
+          "base_url": "https://openrouter.ai/api/v1",
+          "modelTotalTokens": 32768,
+          "apikey": "${ROCKETRIDE_OPENROUTER_API_KEY}"
+        },
+        "parameters": {}
+      },
+      "control": [
+        {
+          "classType": "llm",
+          "from": "analyze_classify_save"
+        }
+      ]
+    },
+    {
+      "id": "media_run_memory",
+      "provider": "memory_internal",
+      "config": {
+        "type": "memory_internal"
+      },
+      "control": [
+        {
+          "classType": "memory",
+          "from": "analyze_classify_save"
+        }
+      ]
+    },
+    {
+      "id": "media_python_rules",
+      "provider": "tool_python",
+      "config": {
+        "type": "tool_python",
+        "timeout": 20,
+        "allowedModules": []
+      },
+      "control": [
+        {
+          "classType": "tool",
+          "from": "analyze_classify_save"
+        }
+      ]
+    },
+    {
+      "id": "media_insforge",
+      "provider": "tool_http_request",
+      "config": {
+        "type": "tool_http_request",
+        "allowGET": false,
+        "allowPOST": true,
+        "allowPUT": false,
+        "allowPATCH": false,
+        "allowDELETE": false,
+        "allowHEAD": false,
+        "allowOPTIONS": false,
+        "urlWhitelist": [
+          {
+            "whitelistPattern": "^https://api\\.hydradb\\.com/query$"
+          },
+          {
+            "whitelistPattern": "^https://[a-z0-9-]+\\.us-west\\.insforge\\.app/api/database/records/investigations$"
+          }
+        ],
+        "rateLimitPerSecond": 2,
+        "rateLimitPerMinute": 30,
+        "maxConcurrentRequests": 1
+      },
+      "control": [
+        {
+          "classType": "tool",
+          "from": "analyze_classify_save"
+        }
+      ]
+    },
+    {
+      "id": "driftlens_media_response",
+      "provider": "response_answers",
+      "config": {
+        "laneName": "result"
+      },
+      "input": [
+        {
+          "lane": "answers",
+          "from": "analyze_classify_save"
+        }
+      ]
+    }
+  ],
+  "source": "driftlens_media_webhook_v2",
+  "project_id": "93fa5f0f-8c0b-4fe1-abe4-54a18d3e4483",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  },
+  "version": 1
+}

@@ -22,13 +22,13 @@ describe('App routing', () => {
 
     expect(pushState).toHaveBeenCalledWith({}, '', '/review');
     expect(window.location.pathname).toBe('/review');
-    expect(screen.getByRole('heading', { name: 'Medical Device View' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Upload your device package' })).toBeTruthy();
   });
 
   it('supports direct review-workspace navigation', () => {
     window.history.replaceState({}, '', '/review');
     render(<App />);
-    expect(screen.getByRole('heading', { name: 'Medical Device View' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Upload your device package' })).toBeTruthy();
   });
 
   it('returns from the workspace to the overview', () => {
@@ -51,7 +51,7 @@ describe('App routing', () => {
       window.history.pushState({}, '', '/review');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
-    expect(screen.getByRole('heading', { name: 'Medical Device View' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Upload your device package' })).toBeTruthy();
 
     act(() => {
       window.history.replaceState({}, '', '/');

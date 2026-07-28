@@ -17,3 +17,9 @@
 .trae
 .windsurf
 .rocketride/
+
+# RocketRide local deployment/runtime artifacts
+integrations/rocketride-insforge/._*.json
+integrations/rocketride-insforge/*.parallel-bak
+integrations/rocketride-insforge/_tmp_*.py
+__pycache__/

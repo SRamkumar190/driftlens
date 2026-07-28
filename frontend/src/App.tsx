@@ -26,6 +26,6 @@ export default function App() {
   }, []);
 
   return route === '/review'
-    ? <ReviewWorkspace onBack={() => navigate('/', { replace: true })} />
+    ? <ReviewWorkspace requiresUpload onBack={() => navigate('/', { replace: true })} />
     : <LandingPage onLaunchDemo={() => navigate('/review')} />;
 }

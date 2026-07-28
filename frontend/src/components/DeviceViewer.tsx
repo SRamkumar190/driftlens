@@ -11,8 +11,9 @@ import {
   Vector3,
 } from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
-import type { ComponentId } from '../data/components'
+import type { ComponentId, ReviewStatus } from '../data/components'
 import {
+  applyComponentStatusColors,
   buildComponentNodeMap,
   calculateFocusPose,
   componentModelNames,
@@ -27,6 +28,7 @@ export interface DeviceViewerProps {
   focusRequestKey: number
   onSelect: (id: ComponentId) => void
   analysisComplete: boolean
+  componentStatuses?: Partial<Record<ComponentId, ReviewStatus>>
 }
 
 function cloneModel(source: Object3D) {
@@ -127,11 +129,17 @@ function MedicalDeviceModel({
   selectedId,
   focusRequestKey,
   onSelect,
+  analysisComplete,
+  componentStatuses = {},
 }: DeviceViewerProps) {
   const { scene } = useGLTF(MODEL_URL)
   const model = useMemo(() => cloneModel(scene), [scene])
   const mapping = useMemo(() => buildComponentNodeMap(model), [model])
   const owners = useMemo(() => buildNodeOwnerMap(mapping), [mapping])
+
+  useEffect(() => {
+    applyComponentStatusColors(mapping, componentStatuses, analysisComplete)
+  }, [analysisComplete, componentStatuses, mapping])
 
   useEffect(() => {
     clearSelectionOutlines(model)

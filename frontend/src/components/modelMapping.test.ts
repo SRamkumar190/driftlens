@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest'
 import {
   buildComponentNodeMap,
   calculateFocusPose,
+  applyComponentStatusColors,
   normalizeModelNodeName,
+  statusColors,
 } from './modelMapping'
 
 function namedPart(name: string, position: [number, number, number]) {
@@ -74,5 +76,35 @@ describe('model component mapping', () => {
     expect(pose.target.x).toBeGreaterThan(0)
     expect(pose.target.x).toBeLessThan(2)
     expect(pose.cameraPosition.z).toBeGreaterThanOrEqual(8)
+  })
+
+  it('applies live red, yellow, green, and gray status colors to mapped meshes', () => {
+    const root = new Object3D()
+    root.add(
+      namedPart('Main Controller', [0, 1, 0]),
+      namedPart('Flow Sensor', [1, 0, 0]),
+      namedPart('Pump Motor', [0, 0, 0]),
+      namedPart('Occlusion Sensor', [-1, 0, 0]),
+      namedPart('Battery Module', [0, -1, 0]),
+    )
+    const mapping = buildComponentNodeMap(root)
+
+    applyComponentStatusColors(mapping, {
+      'main-controller': 'critical',
+      'occlusion-sensor': 'warning',
+      'flow-sensor': 'approved',
+      'pump-motor': 'unreviewed',
+      'battery-module': 'unreviewed',
+    }, true)
+
+    const materialColor = (id: keyof typeof mapping) => {
+      const mesh = mapping[id].children[0] as Mesh
+      return (mesh.material as MeshBasicMaterial).color.getStyle()
+    }
+
+    expect(materialColor('main-controller')).toBe(new MeshBasicMaterial({ color: statusColors.critical }).color.getStyle())
+    expect(materialColor('occlusion-sensor')).toBe(new MeshBasicMaterial({ color: statusColors.warning }).color.getStyle())
+    expect(materialColor('flow-sensor')).toBe(new MeshBasicMaterial({ color: statusColors.approved }).color.getStyle())
+    expect(materialColor('battery-module')).toBe(new MeshBasicMaterial({ color: statusColors.unreviewed }).color.getStyle())
   })
 })

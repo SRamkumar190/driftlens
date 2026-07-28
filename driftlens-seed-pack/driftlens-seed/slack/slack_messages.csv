@@ -1,5 +1,27 @@
 timestamp,channel,author,message
-2026-07-18 09:14,med-device-validation,Maya Chen,[occlusion_sensor_01] We are seeing repeated false alarms at 300 mmHg during bench testing.
-2026-07-18 09:19,med-device-validation,Daniel Ortiz,[occlusion_sensor_01] Propose testing 400 mmHg. Please create a formal change assessment and verification task before release.
-2026-07-21 14:03,firmware-debug,Lena Park,[controller_01] The motor is timing out during startup. I temporarily changed the timeout from 5s to 7s to keep testing moving.
-2026-07-21 14:07,firmware-debug,Lena Park,[controller_01] This is a temporary workaround only. We still need formal review before it becomes part of the device baseline.
+2026-07-11 08:42,med-device-validation,Priya Nair,"[occlusion_sensor_01] Rev B baseline locked at 300 mmHg per DRS-REV-B-001. Please keep discussion tied to component IDs."
+2026-07-11 08:55,med-device-validation,Elena Voss,"[occlusion_sensor_01] Reminder: threshold changes need assessment + verification + Quality ack before release."
+2026-07-12 13:10,firmware-debug,Omar Haddad,"[controller_01] Startup stall detector still using reviewed MOTOR_TIMEOUT_SECONDS = 5. Do not bump without change control."
+2026-07-15 16:22,med-device-validation,Maya Chen,"[occlusion_sensor_01] Bench run log: 11 nuisance alarms at 300 mmHg across 40 infusions. Collecting waveforms."
+2026-07-16 09:05,med-device-validation,Daniel Ortiz,"[occlusion_sensor_01] Looking at telemetry now. If we propose 400 mmHg we still need formal assessment first."
+2026-07-17 11:40,med-device-validation,Maya Chen,"[occlusion_sensor_01] Shared Drive folder updated with false-alarm plots for 300 mmHg."
+2026-07-18 09:14,med-device-validation,Maya Chen,"[occlusion_sensor_01] We are seeing repeated false alarms at 300 mmHg during bench testing."
+2026-07-18 09:19,med-device-validation,Daniel Ortiz,"[occlusion_sensor_01] Propose testing 400 mmHg. Please create a formal change assessment and verification task before release."
+2026-07-18 09:27,med-device-validation,Elena Voss,"[occlusion_sensor_01] Agreed. Open Linear assessment now. Do not treat GitHub edits as approval."
+2026-07-18 10:02,med-device-validation,Daniel Ortiz,"[occlusion_sensor_01] Created MED-142 (assessment) and MED-143 (verification)."
+2026-07-18 15:48,med-device-validation,Maya Chen,"[occlusion_sensor_01] Candidate firmware value 400 mmHg is only for verification runs, not baseline promotion."
+2026-07-19 08:31,product-qa,Priya Nair,"[occlusion_sensor_01] Product wants fewer nuisance alarms, but Quality still owns promotion gates."
+2026-07-19 12:14,product-qa,Elena Voss,"[controller_01] Same rule for motor timeout. Reviewed value stays 5 seconds until assessment + verification complete."
+2026-07-20 17:05,firmware-debug,Lena Park,"[controller_01] Seeing intermittent startup timeouts on two benches. Gathering traces before touching config."
+2026-07-21 09:12,firmware-debug,Omar Haddad,"[controller_01] If you need a temporary workaround, label it temporary and open a design-change ticket."
+2026-07-21 14:03,firmware-debug,Lena Park,"[controller_01] The motor is timing out during startup. I temporarily changed the timeout from 5s to 7s to keep testing moving."
+2026-07-21 14:07,firmware-debug,Lena Park,"[controller_01] This is a temporary workaround only. We still need formal review before it becomes part of the device baseline."
+2026-07-21 14:18,firmware-debug,Omar Haddad,"[controller_01] Acknowledged temporary. Please do not merge as reviewed design. No MED design-change ticket exists yet."
+2026-07-21 16:40,firmware-debug,Lena Park,"[controller_01] Investigation note added to MED-151. Still no approved design-change task for 7 seconds."
+2026-07-22 10:05,med-device-validation,Maya Chen,"[occlusion_sensor_01] MED-143 verification still in progress. Detection latency checks incomplete."
+2026-07-22 11:20,med-device-validation,Daniel Ortiz,"[occlusion_sensor_01] Assessment MED-142 is Done. Do not close verification early."
+2026-07-23 09:44,release-readiness,Priya Nair,"Cross-check: controller_01 expected reviewed=5s; occlusion_sensor_01 expected reviewed=300 mmHg."
+2026-07-23 14:55,release-readiness,Elena Voss,"DriftLens review should surface evidence only. No automated safety decision."
+2026-07-24 08:12,firmware-debug,Lena Park,"[controller_01] deviceConfig still shows motorTimeoutSeconds=7 in the working branch."
+2026-07-24 08:30,med-device-validation,Maya Chen,"[occlusion_sensor_01] deviceConfig shows alarmThresholdMmHg=400 while verification remains incomplete."
+2026-07-24 16:01,product-qa,Omar Haddad,"Please keep component_id tags in every update so HydraDB / DriftLens can correlate Drive Slack Linear GitHub."

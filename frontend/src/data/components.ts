@@ -30,7 +30,7 @@ export interface DeviceComponent {
 }
 
 export const githubOnlyConclusion =
-  'The current value is visible, but the approved value, rationale, and review status cannot be determined.';
+  'The approved value, reason, and review status cannot be determined.';
 
 export const componentOrder: ComponentId[] = [
   'main-controller',

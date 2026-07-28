@@ -1,4 +1,11 @@
 issue_id,title,status,owner,type,description
+MED-140,[occlusion_sensor_01] Collect false-alarm telemetry at 300 mmHg,Done,Maya Chen,Data Collection,Bench telemetry package uploaded to Drive. Supports later assessment of threshold changes.
+MED-141,[occlusion_sensor_01] Draft nuisance-alarm reduction options,Done,Daniel Ortiz,Analysis,Options considered: filter tuning vs threshold increase. Threshold increase requires change control.
 MED-142,[occlusion_sensor_01] Assess increase from 300 to 400 mmHg,Done,Daniel Ortiz,Change Assessment,Engineering rationale reviewed. Proceed to verification before release.
 MED-143,[occlusion_sensor_01] Verify 400 mmHg occlusion threshold,In Progress,Maya Chen,Verification,Verification testing not yet completed.
+MED-144,[occlusion_sensor_01] Quality gate checklist for threshold promotion,Todo,Elena Voss,Quality,Blocked on MED-143 completion. No baseline promotion until verification evidence exists.
+MED-150,[controller_01] Capture startup timeout traces,Done,Lena Park,Data Collection,Traces collected from benches A and C. Intermittent startup timeout confirmed.
 MED-151,[controller_01] Investigate startup timeout failures,Done,Lena Park,Investigation,Observed startup timeout failures. Investigation closed after temporary workaround. No approved design-change task created.
+MED-152,[controller_01] Decide whether 7s workaround needs design change,Todo,Omar Haddad,Follow-up,Reviewed value remains 5 seconds. Temporary GitHub value is 7 seconds. Needs formal design-change decision.
+MED-153,[controller_01] Create design-change assessment for motor timeout,Backlog,Omar Haddad,Change Assessment,Not opened yet. Required before any baseline promotion of MOTOR_TIMEOUT_SECONDS=7.
+MED-160,Release readiness evidence correlation check,In Progress,Priya Nair,Process,Confirm DriftLens can correlate Drive Slack Linear GitHub for controller_01 and occlusion_sensor_01.

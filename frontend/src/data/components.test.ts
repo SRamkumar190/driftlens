@@ -67,7 +67,7 @@ describe('DriftLens component data', () => {
 
   it('uses the supplied indeterminate conclusion for GitHub-only review', () => {
     expect(githubOnlyConclusion).toBe(
-      'The current value is visible, but the approved value, rationale, and review status cannot be determined.',
+      'The approved value, reason, and review status cannot be determined.',
     );
   });
 });

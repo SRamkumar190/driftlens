@@ -1,0 +1,10 @@
+issue_id,comment_id,author,created_at,body
+MED-142,c-142-1,Daniel Ortiz,2026-07-18T17:20:00Z,"Assessment summary for occlusion_sensor_01: moving from 300 mmHg to 400 mmHg may reduce nuisance alarms observed in bench. Residual risk is delayed true-occlusion detection; verification required."
+MED-142,c-142-2,Elena Voss,2026-07-18T18:05:00Z,"Quality acknowledges assessment completeness. Promotion still blocked on MED-143 verification evidence."
+MED-143,c-143-1,Maya Chen,2026-07-20T15:10:00Z,"Verification plan: 20 true-occlusion injections + 40 normal infusions. Status: 12/20 occlusion injections complete."
+MED-143,c-143-2,Maya Chen,2026-07-22T18:40:00Z,"Latency outliers on benches B and D. Cannot mark verification Done."
+MED-143,c-143-3,Daniel Ortiz,2026-07-23T12:00:00Z,"Keep issue In Progress. Do not imply approved baseline change."
+MED-151,c-151-1,Lena Park,2026-07-21T21:15:00Z,"Temporary workaround set controller_01 motorTimeoutSeconds=7 in working branch to unblock bring-up."
+MED-151,c-151-2,Omar Haddad,2026-07-22T09:05:00Z,"Investigation can close, but absence of design-change ticket means 7s remains unreviewed drift relative to DRS-REV-B-001 (5 seconds)."
+MED-152,c-152-1,Priya Nair,2026-07-23T16:30:00Z,"Systems preference: either revert to 5s or open MED design-change assessment. Silent baseline drift is not acceptable."
+MED-160,c-160-1,Priya Nair,2026-07-24T10:00:00Z,"Evidence correlation checklist includes Drive specs, Slack threads, Linear assessment/verification, and GitHub implementation values."
