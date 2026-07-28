@@ -1,0 +1,12 @@
+{
+  "component_id": "occlusion_sensor_01",
+  "component_name": "Occlusion Sensor",
+  "status": "verification_incomplete",
+  "reviewed_value": "300 mmHg",
+  "implemented_value": "400 mmHg",
+  "confidence": 0.82,
+  "drive_evidence": "Reviewed occlusion alarm threshold is 300 mmHg",
+  "slack_evidence": "Engineers reported repeated false alarms during bench testing and proposed increasing the threshold to 400 mmHg",
+  "linear_evidence": "Change-assessment task 'Evaluate occlusion threshold increase to 400 mmHg' is marked Done",
+  "github_evidence": "OCCLUSION_THRESHOLD = 400"
+}

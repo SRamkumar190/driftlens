@@ -1,0 +1,12 @@
+﻿node_modules/
+.env
+dist/
+.wrangler/
+
+.claude/
+.rocketride/
+frontend/.openai/
+
+.claude/
+.rocketride/
+frontend/.openai/
