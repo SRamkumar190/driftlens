@@ -1,0 +1,7 @@
+{
+  "source_mode": "all_sources",
+  "component_ids": [
+    "controller_01",
+    "occlusion_sensor_01"
+  ]
+}

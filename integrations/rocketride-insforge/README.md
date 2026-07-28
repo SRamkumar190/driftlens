@@ -1,17 +1,72 @@
-# integrations/rocketride-insforge/
+# DriftLens RocketRide Cloud pipeline
 
-**Owner:** Person 3
+## Required environment variables
 
-**Responsibility:** Run the RocketRide Cloud pipeline (validate → generate final
-conclusion → return frontend-ready JSON) and store the intent profile and latest
-investigation result in InsForge with review status `"pending"`.
+Set these variables in the RocketRide Cloud project that runs the pipeline:
 
-**Expected input:** The JSON produced by `integrations/hydra-pipeshift/` (HydraDB +
-Pipeshift output) — see `../../shared/sample-response.json` for the shape.
+```text
+HYDRA_DB_API_KEY=<HydraDB API key>
+ROCKETRIDE_HYDRADB_DATABASE=<DriftLens HydraDB database ID>
+ROCKETRIDE_OPENAI_KEY=<OpenAI API key>
+ROCKETRIDE_URI=https://api.rocketride.ai
+ROCKETRIDE_AUTH=<RocketRide Cloud API token>
+```
 
-**Expected output:** A `ComponentResult`-shaped JSON object (see `../../shared/types.ts`)
-with `conclusion` and `recommended_action` finalized, saved to InsForge alongside
-the active intent profile and a `"pending"` review status. This output is what
-`integration/`'s endpoint returns to the frontend.
+`ROCKETRIDE_APIKEY` is accepted by the RocketRide CLI in place of
+`ROCKETRIDE_AUTH`.
 
-**How to run:** _Not yet implemented — instructions added once the pipeline is deployed._
+## HydraDB fields
+
+The `hydradb_driftlens` node uses:
+
+```text
+database: ${ROCKETRIDE_HYDRADB_DATABASE}
+collection: Ali_amjad
+max_results: 20
+```
+
+The API key field is intentionally blank so the HydraDB node reads
+`HYDRA_DB_API_KEY` from the Cloud environment.
+
+## Deploy
+
+Install the RocketRide CLI and start the long-lived webhook pipeline against
+Cloud:
+
+```powershell
+python -m pip install rocketride
+$env:ROCKETRIDE_URI = "https://api.rocketride.ai"
+$env:ROCKETRIDE_APIKEY = $env:ROCKETRIDE_AUTH
+rocketride start .\driftlens-analysis.pipe
+```
+
+Keep the task token printed by `rocketride start`. The pipeline remains deployed
+as that running Cloud task.
+
+## Webhook URL
+
+In RocketRide Cloud, open the running task, select the `driftlens_webhook`
+source node, and copy its Webhook URL. The same location shows the task token
+used by the CLI and SDK.
+
+## Test payloads
+
+Post each JSON file to the Webhook URL:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri $env:DRIFTLENS_WEBHOOK_URL `
+  -ContentType "application/json" `
+  -InFile .\test-payloads\all-sources.json
+
+Invoke-RestMethod -Method Post -Uri $env:DRIFTLENS_WEBHOOK_URL `
+  -ContentType "application/json" `
+  -InFile .\test-payloads\github-only.json
+```
+
+The all-sources payload should produce a red `unreviewed_drift` result for
+`controller_01` (confidence about `0.96`) and a yellow
+`verification_incomplete` result for `occlusion_sensor_01` (confidence about
+`0.92`). The GitHub-only payload is deliberately degraded: reviewed values and
+Drive, Slack, and Linear evidence are `null`; both results are
+`insufficient_evidence` with confidence `0.19`.
+

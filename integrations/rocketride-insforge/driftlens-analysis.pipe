@@ -1,0 +1,173 @@
+{
+  "components": [
+    {
+      "id": "driftlens_webhook",
+      "provider": "webhook",
+      "config": {
+        "hideForm": true,
+        "mode": "Source",
+        "parameters": {},
+        "type": "webhook"
+      }
+    },
+    {
+      "id": "analysis_question",
+      "provider": "question",
+      "config": {
+        "parameters": {},
+        "type": "question"
+      },
+      "input": [
+        {
+          "lane": "text",
+          "from": "driftlens_webhook"
+        }
+      ]
+    },
+    {
+      "id": "driftlens_manager",
+      "provider": "agent_crewai_manager",
+      "config": {
+        "agent_description": "Coordinates live medical-device evidence retrieval and evidence-bounded drift classification for DriftLens.",
+        "advanced_mode": true,
+        "goal": "Return one strict frontend-ready DriftLens JSON object grounded only in evidence retrieved during this request.",
+        "backstory": "You are the DriftLens analysis manager. You coordinate evidence retrieval and classification, but you do not determine medical safety, regulatory compliance, or individual blame.",
+        "instructions": [
+          "The incoming request is JSON with source_mode and component_ids. Accept only source_mode all_sources or github_only. Analyze every requested component and no others.",
+          "Delegate evidence retrieval for every component to DriftLens Evidence Retriever. Then pass that run's structured evidence to DriftLens Drift Classifier. Do not classify before retrieval completes.",
+          "Treat every webhook call as independent. Never reuse evidence, values, rationale, or approval status from an earlier request.",
+          "Verify that the classifier did not add evidence unsupported by the retriever output. Replace unsupported fields with null and reduce the result to insufficient_evidence when a required value cannot be supported.",
+          "For github_only, ensure reviewed_value, drive_evidence, slack_evidence, and linear_evidence are null; approval status is unknown; status is insufficient_evidence; confidence is exactly 0.19.",
+          "Each component must contain exactly these keys: component_id, component_name, status, reviewed_value, implemented_value, confidence, drive_evidence, slack_evidence, linear_evidence, github_evidence, conclusion, recommended_action.",
+          "Allowed statuses are matches_design, verification_incomplete, unreviewed_drift, and insufficient_evidence.",
+          "Use the frontend display name Main Controller for controller_01 and Occlusion Sensor for occlusion_sensor_01.",
+          "Return exactly one JSON object whose only top-level key is components. Never wrap JSON in Markdown and never add text before or after it."
+        ],
+        "parameters": {}
+      },
+      "input": [
+        {
+          "lane": "questions",
+          "from": "analysis_question"
+        }
+      ]
+    },
+    {
+      "id": "evidence_retriever",
+      "provider": "agent_crewai_subagent",
+      "config": {
+        "advanced_mode": true,
+        "role": "DriftLens Evidence Retriever",
+        "goal": "Retrieve complete, source-attributed evidence for each requested component from the live DriftLens HydraDB collection without inventing or carrying over evidence.",
+        "backstory": "You are a read-only evidence specialist for medical-device design review. HydraDB recall_memory is your only evidence source.",
+        "task_description": "Parse {user_request}. For each component_id, call hydradb_driftlens.recall_memory with max_results 20. Query for the reviewed specification, Slack discussion, Linear assessment and verification tasks, GitHub implementation, exact values, dates, and source names. Do not infer missing evidence. For all_sources, retain Drive, Slack, Linear, and GitHub results and identify reviewed_value, implemented_value, and whether completed verification is explicitly supported. For github_only, still make a fresh call for this request, then keep only results whose source metadata provider is github; discard every other provider. If source metadata cannot prove GitHub provenance, discard the result. Never claim a missing source was searched successfully. Return structured evidence for every component with exactly: component_id, source_mode, reviewed_value, implemented_value, drive_evidence, slack_evidence, linear_evidence, github_evidence, verification_completed. Use null for missing evidence. In github_only, reviewed_value, drive_evidence, slack_evidence, and linear_evidence must be null.",
+        "expected_output": "A JSON array containing one evidence object per requested component. Every non-null claim is traceable to the current HydraDB tool result and source metadata.",
+        "instructions": [
+          "Use recall_memory, not store_memory. Never modify HydraDB.",
+          "For each component use a query of this form: Find all evidence for medical-device component <component_id>. Return the reviewed specification, Slack discussions, Linear assessment and verification tasks, GitHub implementation, exact values, dates, source names, and source metadata. Do not infer missing evidence.",
+          "HydraDB results expose source provenance in metadata.provider and additional_metadata.app_provider. Use those fields for source filtering.",
+          "Do not reuse evidence from previous all-sources or GitHub-only runs."
+        ],
+        "parameters": {}
+      },
+      "control": [
+        {
+          "classType": "crewai",
+          "from": "driftlens_manager"
+        }
+      ]
+    },
+    {
+      "id": "drift_classifier",
+      "provider": "agent_crewai_subagent",
+      "config": {
+        "advanced_mode": true,
+        "role": "DriftLens Drift Classifier",
+        "goal": "Classify each component deterministically from the retriever's structured evidence and produce frontend-ready fields without adding evidence.",
+        "backstory": "You are an evidence-bounded drift classifier. You compare reviewed design values with current implementation values but never judge safety, compliance, or blame.",
+        "task_description": "Classify the structured evidence supplied by the manager. Use matches_design only when both values exist and match. Use verification_incomplete only when values differ, discussion or rationale exists, a formal assessment exists, and completed verification evidence is missing. Use unreviewed_drift only when values differ, implementation evidence exists, and an approved change assessment is missing. Use insufficient_evidence when reviewed_value or implemented_value cannot be determined. For github_only, current implementation may be reported but reviewed_value must be null, approval status is unknown, status is insufficient_evidence, and confidence is exactly 0.19. Do not create or embellish evidence. Return the exact frontend component keys requested by the manager.",
+        "expected_output": "A JSON array with one classified frontend-ready component object per requested component and no prose.",
+        "instructions": [
+          "Allowed statuses: matches_design, verification_incomplete, unreviewed_drift, insufficient_evidence.",
+          "For all_sources, use confidence 0.96 when complete retrieved evidence supports unreviewed_drift and 0.92 when complete retrieved evidence supports verification_incomplete. Lower confidence when the supporting evidence is partial. For github_only confidence is always exactly 0.19.",
+          "Use only evidence present in the retriever output passed by the manager.",
+          "component_name may be a human-readable rendering of component_id when the evidence has no explicit name.",
+          "Conclusions and recommended actions must describe evidence review only; do not determine safety, FDA compliance, or individual blame."
+        ],
+        "parameters": {}
+      },
+      "control": [
+        {
+          "classType": "crewai",
+          "from": "driftlens_manager"
+        }
+      ]
+    },
+    {
+      "id": "shared_llm",
+      "provider": "llm_openai",
+      "config": {
+        "profile": "openai-5-mini",
+        "openai-5-mini": {
+          "apikey": "${ROCKETRIDE_OPENAI_KEY}"
+        },
+        "parameters": {}
+      },
+      "control": [
+        {
+          "classType": "llm",
+          "from": "driftlens_manager"
+        },
+        {
+          "classType": "llm",
+          "from": "evidence_retriever"
+        },
+        {
+          "classType": "llm",
+          "from": "drift_classifier"
+        }
+      ]
+    },
+    {
+      "id": "hydradb_driftlens",
+      "provider": "db_hydradb",
+      "config": {
+        "profile": "default",
+        "default": {
+          "api_key": "",
+          "database": "${ROCKETRIDE_HYDRADB_DATABASE}",
+          "collection": "Ali_amjad",
+          "max_results": 20
+        },
+        "parameters": {}
+      },
+      "control": [
+        {
+          "classType": "tool",
+          "from": "evidence_retriever"
+        }
+      ]
+    },
+    {
+      "id": "driftlens_response",
+      "provider": "response_answers",
+      "config": {
+        "laneName": "components"
+      },
+      "input": [
+        {
+          "lane": "answers",
+          "from": "driftlens_manager"
+        }
+      ]
+    }
+  ],
+  "source": "driftlens_webhook",
+  "project_id": "f7f748d8-9e6f-41a9-90de-57f106968b35",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  },
+  "version": 1
+}

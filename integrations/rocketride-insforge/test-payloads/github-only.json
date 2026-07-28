@@ -1,0 +1,7 @@
+{
+  "source_mode": "github_only",
+  "component_ids": [
+    "controller_01",
+    "occlusion_sensor_01"
+  ]
+}
