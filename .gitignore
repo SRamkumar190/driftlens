@@ -1,6 +1,12 @@
 .env
 .env.local
 .env.*.local
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+*.log
+.DS_Store
 
 # InsForge & AI agent skills
 .insforge
@@ -23,3 +29,7 @@ integrations/rocketride-insforge/._*.json
 integrations/rocketride-insforge/*.parallel-bak
 integrations/rocketride-insforge/_tmp_*.py
 __pycache__/
+frontend/.next/
+frontend/.vinext/
+frontend/.wrangler/
+frontend/.openai/

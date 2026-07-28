@@ -1,0 +1,12 @@
+{
+  "component_id": "controller_01",
+  "component_name": "Motor Controller",
+  "status": "unreviewed_drift",
+  "reviewed_value": "5 seconds",
+  "implemented_value": "7 seconds",
+  "confidence": 0.96,
+  "drive_evidence": "Reviewed motor timeout is 5 seconds",
+  "slack_evidence": null,
+  "linear_evidence": null,
+  "github_evidence": "MOTOR_TIMEOUT_SECONDS = 7"
+}

@@ -1,4 +1,4 @@
-import type { ComponentResult } from './investigate';
+import type { ComponentResult } from './investigate.js';
 
 interface HydraChunk {
   chunk_content?: string;

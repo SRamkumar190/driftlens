@@ -157,31 +157,57 @@ function parsePossiblyEncodedJson(value: unknown): unknown {
   }
 }
 
+function coerceComponentsArray(value: unknown): unknown[] | null {
+  const parsed = parsePossiblyEncodedJson(value);
+  if (!Array.isArray(parsed)) return null;
+  if (parsed.length === 1) {
+    const only = parsePossiblyEncodedJson(parsed[0]);
+    if (Array.isArray(only)) return only;
+  }
+  if (parsed.every((item) => typeof item === 'string')) {
+    const joined = parsePossiblyEncodedJson(parsed.join('\n'));
+    if (Array.isArray(joined)) return joined;
+  }
+  return parsed;
+}
+
 function unwrapRocketRideResponse(payload: unknown): Record<string, unknown> {
   let current = parsePossiblyEncodedJson(payload);
 
   for (let depth = 0; depth < 6; depth += 1) {
-    if (Array.isArray(current)) return { components: current };
-    if (!current || typeof current !== 'object') break;
+    const asArray = coerceComponentsArray(current);
+    if (asArray) return { components: asArray };
+    if (!current || typeof current !== 'object' || Array.isArray(current)) break;
 
     const record = current as Record<string, unknown>;
-    const directComponents = parsePossiblyEncodedJson(record.components);
-    if (Array.isArray(directComponents)) {
+    const directComponents = coerceComponentsArray(record.components);
+    if (directComponents) {
       return {
         ...record,
         components: directComponents,
       };
     }
+    const nestedObject = parsePossiblyEncodedJson(record.components);
     if (
-      directComponents
-      && typeof directComponents === 'object'
-      && !Array.isArray(directComponents)
-      && Array.isArray((directComponents as Record<string, unknown>).components)
+      nestedObject
+      && typeof nestedObject === 'object'
+      && !Array.isArray(nestedObject)
+      && coerceComponentsArray((nestedObject as Record<string, unknown>).components)
     ) {
-      return directComponents as Record<string, unknown>;
+      const nestedRecord = nestedObject as Record<string, unknown>;
+      return {
+        ...nestedRecord,
+        components: coerceComponentsArray(nestedRecord.components) as unknown[],
+      };
     }
 
-    const nested = record.result ?? record.data ?? record.answer ?? record.output;
+    const nested = record.result
+      ?? record.data
+      ?? record.answer
+      ?? record.output
+      ?? (record.objects && typeof record.objects === 'object'
+        ? (record.objects as Record<string, unknown>).body
+        : undefined);
     if (nested === undefined) break;
     current = parsePossiblyEncodedJson(nested);
   }
