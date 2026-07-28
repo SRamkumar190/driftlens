@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # DriftLens integration server
+=======
+# Integration
+>>>>>>> origin/main
 
 `POST /api/investigate` orchestrates:
 
